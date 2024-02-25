@@ -18,9 +18,11 @@ board = [[0 for i in range(NUM_OF_ELEMENTS)] for j in range(NUM_OF_ELEMENTS)]
 flag_start = False  # start flag for drawing the start node
 flag_target = False  # target flag for drawing the target node
 run_bfs = False
+run_dfs = False
 find_path = False
 target:Node
-queue:list[Node] = []
+bfs_queue:list[Node] = []
+dfs_stack:list[Node] = []
 
   
 def draw_board(screen, board):
@@ -47,7 +49,8 @@ def create_start(get_mouse_pos) -> bool:
         board[y][x] = 2
         flag_start = True         
                     # put the start node in the queue
-        queue.append(Node(x, y))
+        bfs_queue.append(Node(x, y))
+        dfs_stack.append(Node(x, y))
         
     return flag_start
 
@@ -59,7 +62,7 @@ def create_target(get_mouse_pos) -> bool:
         flag_target = True
     return flag_target
 
-def check_neighbor(x, y, parent):   
+def bfs_check_neighbor(x, y, parent):   
     if check_if_target(board, x, y):
         global run_bfs
         global find_path
@@ -73,8 +76,28 @@ def check_neighbor(x, y, parent):
     if check_if_in_bounds(x, y) and check_if_space(board, x, y):
         node = Node(x, y)
         node.set_parent(parent)
-        queue.append(node)
+        bfs_queue.append(node) # add to queue
+        print(bfs_queue)
         board[y][x] = 6 # current
+    
+
+def dfs_check_neighbor(x, y, parent):
+    if check_if_target(board, x, y):
+        global run_dfs
+        global find_path
+        global target
+        run_dfs = False
+        find_path = True
+        target = Node(x, y)
+        target.set_parent(parent)
+    
+    if check_if_in_bounds(x, y) and check_if_space(board, x, y):
+        node = Node(x, y)
+        node.set_parent(parent)
+        dfs_stack.insert(0, node) # add to stack
+        print(dfs_stack)
+        board[y][x] = 6 # current
+    
     
 def restore_path():
     current = target
@@ -84,36 +107,52 @@ def restore_path():
         current = current.parent
 
 def bfs():
-    if queue_is_not_empty(queue):
-        current_node = queue.pop(0)
+    if queue_is_not_empty(bfs_queue):
+        current_node = bfs_queue.pop(0)
         x = current_node.get_x()
         y = current_node.get_y()
         
         if board[y][x] != 2:
             board[y][x] = 5 # visited
         
-        check_neighbor(x, y-1, current_node) # up
-        check_neighbor(x, y+1, current_node) # down
-        check_neighbor(x-1, y, current_node) # left
-        check_neighbor(x+1, y, current_node) # right
+        bfs_check_neighbor(x, y-1, current_node) # up
+        bfs_check_neighbor(x, y+1, current_node) # down
+        bfs_check_neighbor(x-1, y, current_node) # left
+        bfs_check_neighbor(x+1, y, current_node) # right
     
-    
+def dfs():
+    if queue_is_not_empty(dfs_stack):
+        current_node = dfs_stack.pop()
+        x = current_node.get_x()
+        y = current_node.get_y()
+        
+        if board[y][x] != 2:
+            board[y][x] = 5 # visited
+            
+        dfs_check_neighbor(x, y-1, current_node) # up
+        dfs_check_neighbor(x, y+1, current_node)
+        dfs_check_neighbor(x-1, y, current_node)
+        dfs_check_neighbor(x+1, y, current_node)
         
         
 def reset_game():
     global flag_start
     global flag_target
     global run_bfs
+    global run_dfs
     global find_path
-    global queue
+    global bfs_queue
+    global dfs_stack
     global board
     board = [[0 for i in range(NUM_OF_ELEMENTS)] for j in range(NUM_OF_ELEMENTS)]
     flag_start = False
     flag_target = False
     run_bfs = False
+    run_dfs = False
     find_path = False
     
-    queue = []
+    bfs_queue = []
+    dfs_stack = []
     
 button_reset = My_Button("Reset", 1*BUTTON_SPACE, SCREEN_HEIGHT + BUTTON_SPACE, BUTTON_WIDTH, BUTTON_HEIGHT)
 button_reset.set_callback(reset_game)
@@ -122,7 +161,7 @@ button_bfs = My_Button("BFS", 2*BUTTON_SPACE + BUTTON_WIDTH, SCREEN_HEIGHT + BUT
 button_bfs.set_callback(bfs)
 
 button_dfs = My_Button("DFS", 3*BUTTON_SPACE + 2*BUTTON_WIDTH, SCREEN_HEIGHT + BUTTON_SPACE, BUTTON_WIDTH, BUTTON_HEIGHT)
-# button_dfs.set_callback(dfs)
+button_dfs.set_callback(dfs)
 
 
 button_best_first = My_Button("Best First", 4*BUTTON_SPACE + 3*BUTTON_WIDTH, SCREEN_HEIGHT + BUTTON_SPACE, BUTTON_WIDTH, BUTTON_HEIGHT)
@@ -156,10 +195,18 @@ while running:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if flag_start and flag_target:
                     run_bfs = True
+                    
+        if button_dfs.is_mouse_over():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if flag_start and flag_target:
+                    run_dfs = True
             
     if flag_start and flag_target:
         if run_bfs:
             bfs()
+            pass
+        if run_dfs:
+            dfs()
             pass
         
         
