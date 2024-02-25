@@ -4,7 +4,7 @@ import pygame
 
 
 @dataclass
-class Button:
+class My_Button:
     '''
     A class to represent a button.
     

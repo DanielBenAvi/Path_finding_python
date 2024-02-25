@@ -1,12 +1,13 @@
 import pygame
 from const import BLACK, BLANK_SPACE, BLUE, BORDER_COLOR, DARK_GRAY, GRAY, GREEN, NODE_SIZE, NUM_OF_ELEMENTS, RED, SCREEN_HEIGHT, SCREEN_WIDTH, WHITE
 from Node import Node
-from button import Button
+from button import My_Button
 from help_fn import *
 
 # pygame setup
 pygame.init()
-screen = pygame.display.set_mode((SCREEN_WIDTH , SCREEN_HEIGHT + BLANK_SPACE))
+screen = pygame.display.set_mode((SCREEN_WIDTH ,SCREEN_HEIGHT + 2*BLANK_SPACE))
+pygame.display.set_caption("Pathfinding Visualizer")
 clock = pygame.time.Clock()
 running = True
 
@@ -95,6 +96,9 @@ def bfs():
         check_neighbor(x, y+1, current_node) # down
         check_neighbor(x-1, y, current_node) # left
         check_neighbor(x+1, y, current_node) # right
+    
+    
+        
         
 def reset_game():
     global flag_start
@@ -111,21 +115,21 @@ def reset_game():
     
     queue = []
     
-button_reset = Button("Reset", 1*BUTTON_SPACE, SCREEN_HEIGHT + BUTTON_SPACE, BUTTON_WIDTH, BUTTON_HEIGHT)
+button_reset = My_Button("Reset", 1*BUTTON_SPACE, SCREEN_HEIGHT + BUTTON_SPACE, BUTTON_WIDTH, BUTTON_HEIGHT)
 button_reset.set_callback(reset_game)
 
-button_bfs = Button("BFS", 2*BUTTON_SPACE + BUTTON_WIDTH, SCREEN_HEIGHT + BUTTON_SPACE, BUTTON_WIDTH, BUTTON_HEIGHT)
+button_bfs = My_Button("BFS", 2*BUTTON_SPACE + BUTTON_WIDTH, SCREEN_HEIGHT + BUTTON_SPACE, BUTTON_WIDTH, BUTTON_HEIGHT)
 button_bfs.set_callback(bfs)
 
-button_dfs = Button("DFS", 3*BUTTON_SPACE + 2*BUTTON_WIDTH, SCREEN_HEIGHT + BUTTON_SPACE, BUTTON_WIDTH, BUTTON_HEIGHT)
+button_dfs = My_Button("DFS", 3*BUTTON_SPACE + 2*BUTTON_WIDTH, SCREEN_HEIGHT + BUTTON_SPACE, BUTTON_WIDTH, BUTTON_HEIGHT)
 # button_dfs.set_callback(dfs)
 
 
-button_best_first = Button("Best First", 4*BUTTON_SPACE + 3*BUTTON_WIDTH, SCREEN_HEIGHT + BUTTON_SPACE, BUTTON_WIDTH, BUTTON_HEIGHT)
+button_best_first = My_Button("Best First", 4*BUTTON_SPACE + 3*BUTTON_WIDTH, SCREEN_HEIGHT + BUTTON_SPACE, BUTTON_WIDTH, BUTTON_HEIGHT)
 # button_best_first.set_callback(best_first)
 
 
-button_astar = Button("A*", 5*BUTTON_SPACE + 4*BUTTON_WIDTH, SCREEN_HEIGHT + BUTTON_SPACE, BUTTON_WIDTH, BUTTON_HEIGHT)
+button_astar = My_Button("A*", 5*BUTTON_SPACE + 4*BUTTON_WIDTH, SCREEN_HEIGHT + BUTTON_SPACE, BUTTON_WIDTH, BUTTON_HEIGHT)
 # button_astar.set_callback(astar)
 
 
