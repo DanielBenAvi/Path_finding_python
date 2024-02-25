@@ -22,6 +22,12 @@ This is a path finding algorithm visualizer that allows you to visualize:
 2. Tod set target point press 't' while hovering over the desired cell
 3. To set walls press 'w' while hovering over the desired cell
 
+## TODO's
+
+- [ ] Add DFS
+- [ ] Add Greedy
+- [ ] Add A*
+
 ## Contributing
 
 @DanielBenAvi
