@@ -1,3 +1,4 @@
+from queue import PriorityQueue
 import pygame
 from const import BLACK, BLANK_SPACE, BLUE, BORDER_COLOR, DARK_GRAY, GRAY, GREEN, NODE_SIZE, NUM_OF_ELEMENTS, RED, SCREEN_HEIGHT, SCREEN_WIDTH, WHITE
 from Node import Node
@@ -19,10 +20,14 @@ flag_start = False  # start flag for drawing the start node
 flag_target = False  # target flag for drawing the target node
 run_bfs = False
 run_dfs = False
+run_best_first = False
 find_path = False
+target_x:int
+target_y:int
 target:Node
 bfs_queue:list[Node] = []
 dfs_stack:list[Node] = []
+best_first_queue = PriorityQueue()
 
   
 def draw_board(screen, board):
@@ -48,9 +53,10 @@ def create_start(get_mouse_pos) -> bool:
     if not flag_start:
         board[y][x] = 2
         flag_start = True         
-                    # put the start node in the queue
+        # put the start node in the queue
         bfs_queue.append(Node(x, y))
         dfs_stack.append(Node(x, y))
+        best_first_queue.put(Node(x, y))
         
     return flag_start
 
@@ -59,6 +65,10 @@ def create_target(get_mouse_pos) -> bool:
     global flag_target
     if not flag_target:
         board[y][x] = 3
+        global target_x
+        global target_y
+        target_x = x
+        target_y = y
         flag_target = True
     return flag_target
 
@@ -79,7 +89,23 @@ def bfs_check_neighbor(x, y, parent):
         bfs_queue.append(node) # add to queue
         print(bfs_queue)
         board[y][x] = 6 # current
-    
+
+def best_first_check_neighbor(x, y, parent):
+    if check_if_target(board, x, y):
+        global run_best_first
+        global find_path
+        global target
+        run_best_first = False
+        find_path = True
+        target = Node(x, y)
+        target.set_parent(parent)
+        
+    if check_if_in_bounds(x, y) and check_if_space(board, x, y):
+        node = Node(x, y)
+        node.set_parent(parent)
+        node.claculate_h(target_x, target_y)
+        best_first_queue.put(node)
+        
 
 def dfs_check_neighbor(x, y, parent):
     if check_if_target(board, x, y):
@@ -134,7 +160,20 @@ def dfs():
         dfs_check_neighbor(x-1, y, current_node)
         dfs_check_neighbor(x+1, y, current_node)
         
+def best_first():
+    if not best_first_queue.empty():
+        current_node = best_first_queue.get()
+        x = current_node.get_x()
+        y = current_node.get_y()
         
+        if board[y][x] != 2:
+            board[y][x] = 5 # visited
+        
+        best_first_check_neighbor(x, y-1, current_node) # up
+        best_first_check_neighbor(x, y+1, current_node)
+        best_first_check_neighbor(x-1, y, current_node)
+        best_first_check_neighbor(x+1, y, current_node)
+     
 def reset_game():
     global flag_start
     global flag_target
@@ -165,7 +204,7 @@ button_dfs.set_callback(dfs)
 
 
 button_best_first = My_Button("Best First", 4*BUTTON_SPACE + 3*BUTTON_WIDTH, SCREEN_HEIGHT + BUTTON_SPACE, BUTTON_WIDTH, BUTTON_HEIGHT)
-# button_best_first.set_callback(best_first)
+button_best_first.set_callback(best_first)
 
 
 button_astar = My_Button("A*", 5*BUTTON_SPACE + 4*BUTTON_WIDTH, SCREEN_HEIGHT + BUTTON_SPACE, BUTTON_WIDTH, BUTTON_HEIGHT)
@@ -201,13 +240,15 @@ while running:
                 if flag_start and flag_target:
                     run_dfs = True
             
+        if button_best_first.is_mouse_over():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if flag_start and flag_target:
+                    run_best_first = True
+        
     if flag_start and flag_target:
-        if run_bfs:
-            bfs()
-            pass
-        if run_dfs:
-            dfs()
-            pass
+        if run_bfs: bfs()
+        if run_dfs: dfs()
+        if run_best_first: best_first()
         
         
     if find_path:
